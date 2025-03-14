@@ -16,6 +16,13 @@ Ví dụ:
 - Nếu muốn cấp **100 FPT**, bạn cần mint `100 * 10^18 = 100000000000000000000` FPT.
 
 ---
+## 💵 Bước 5: Kiểm tra số dư (Balance)
+- **Gọi hàm `balanceOf` trên FPT CURRENCY**.
+- **Nhập địa chỉ User** để kiểm tra số FPT hiện có.
+
+📌 Nếu số dư hợp lệ, tiếp tục bước tiếp theo.
+
+---
 
 ## 🔓 Bước 3: User Approve Contract LabBooking
 - **Chuyển sang tài khoản User**.
@@ -38,13 +45,6 @@ Ví dụ:
 
 ---
 
-## 💵 Bước 5: Kiểm tra số dư (Balance)
-- **Gọi hàm `balanceOf` trên FPT CURRENCY**.
-- **Nhập địa chỉ User** để kiểm tra số FPT hiện có.
-
-📌 Nếu số dư hợp lệ, tiếp tục bước tiếp theo.
-
----
 
 ## 👥 Bước 6: Đăng ký User vào hệ thống
 - **Chuyển sang tài khoản Owner hoặc Staff**.
