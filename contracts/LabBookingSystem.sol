@@ -3,6 +3,9 @@ pragma solidity ^0.8.19;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+
+// import "../node_modules/@openzeppelin/contracts/security/ReentrancyGuard.sol";
+
 import "./FPTCurrency.sol";
 
 contract LabBookingSystem is Ownable, ReentrancyGuard {
@@ -70,7 +73,11 @@ contract LabBookingSystem is Ownable, ReentrancyGuard {
         _;
     }
 
-    constructor(address _fptToken) Ownable(msg.sender) {
+    // constructor(address _fptToken) Ownable(msg.sender) {
+    //     fptToken = FPTCurrency(_fptToken);
+    // }
+
+    constructor(address _fptToken) {
         fptToken = FPTCurrency(_fptToken);
     }
 

@@ -2,6 +2,15 @@
   "name": "job",
   "version": "1.0.0",
   "main": "index.js",
+  "scripts": {
+    "test": "npx hardhat test",
+    "compile": "npx hardhat compile",
+    "deploy:bnb": "npx hardhat run scripts/deploy.js --network bnb",
+    "deploy:bnbv2": "npx hardhat run scripts/deploy.js --network bnbv2",
+    "deploy:eth": "npx hardhat run scripts/deploy.js --network eth",
+    "deploy:sepolia": "npx hardhat run scripts/deploy.js --network sepolia",
+    "deploy:lineaSepolia": "npx hardhat run scripts/deploy.js --network lineaSepolia"
+  },
   "dependencies": {
     "abbrev": "^1.0.9",
     "acorn": "^8.14.1",
@@ -358,13 +367,10 @@
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
-    "@openzeppelin/contracts": "^5.2.0",
+    "@openzeppelin/contracts": "^4.9.3",
     "dotenv": "^16.4.7",
     "hardhat": "^2.22.19",
     "mocha": "^10.8.2"
-  },
-  "scripts": {
-    "test": "mocha"
   },
   "keywords": [],
   "author": "",

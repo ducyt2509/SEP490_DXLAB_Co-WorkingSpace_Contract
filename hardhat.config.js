@@ -1,26 +1,68 @@
-require("@nomicfoundation/hardhat-toolbox");
-require("dotenv").config();
+require('@nomicfoundation/hardhat-toolbox');
+require('@nomicfoundation/hardhat-chai-matchers');
+require('dotenv').config();
 
-const SEPOLIA_PRIVATE_KEY = process.env.PRIVATE_KEY || "0000000000000000000000000000000000000000000000000000000000000000";
-const SEPOLIA_RPC_URL = process.env.SEPOLIA_RPC_URL || "https://eth-sepolia.g.alchemy.com/v2/your-api-key";
-
-/** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
-  solidity: "0.8.19",
-  networks: {
-    hardhat: {
-      // Local network config
-    },
-    // Only include Sepolia if credentials are provided
-    ...(process.env.PRIVATE_KEY && process.env.SEPOLIA_RPC_URL ? {
-      sepolia: {
-        url: SEPOLIA_RPC_URL,
-        accounts: [SEPOLIA_PRIVATE_KEY],
-      }
-    } : {})
+  solidity: '0.8.24',
+
+  paths: {
+    sources: "./contracts",
+    tests: "./test",
+    cache: "./cache",
+    artifacts: "./artifacts",
+    node_modules: "./node_modules"
   },
-  gasReporter: {
+  
+  networks: {
+    bnb: {
+      url: `https://bsc-testnet.infura.io/v3/${process.env.NETWORK_API_KEY}`,
+      accounts: [
+        `${
+          process.env.PRIVATE_KEY.startsWith('0x')
+            ? process.env.PRIVATE_KEY
+            : '0x' + process.env.PRIVATE_KEY
+        }`,
+      ],
+      chainId: 97,
+    },
+    bnbv2: {
+      url: `https://bsc-testnet-rpc.publicnode.com`,
+      accounts: [
+        `${
+          process.env.PRIVATE_KEY.startsWith('0x')
+            ? process.env.PRIVATE_KEY
+            : '0x' + process.env.PRIVATE_KEY
+        }`,
+      ],
+      chainId: 97,
+    },
+    sepolia: {
+      url: `https://sepolia.infura.io/v3/${process.env.NETWORK_API_KEY}`,
+      accounts: [
+        `${
+          process.env.PRIVATE_KEY.startsWith('0x')
+            ? process.env.PRIVATE_KEY
+            : '0x' + process.env.PRIVATE_KEY
+        }`,
+      ],
+    },
+    lineaSepolia: {
+      url: `https://linea-sepolia.infura.io/v3/${process.env.NETWORK_API_KEY}`,
+      accounts: [
+        `${
+          process.env.PRIVATE_KEY.startsWith('0x')
+            ? process.env.PRIVATE_KEY
+            : '0x' + process.env.PRIVATE_KEY
+        }`,
+      ],
+    },
+  },
+
+  etherscan: {
+    apiKey: process.env.ETHERSCAN_API_KEY,
+  },
+
+  sourcify: {
     enabled: true,
-    currency: 'USD',
-  }
+  },
 };

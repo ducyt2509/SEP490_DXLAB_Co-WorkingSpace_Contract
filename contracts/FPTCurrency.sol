@@ -5,9 +5,13 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract FPTCurrency is ERC20, Ownable {
-    constructor() ERC20("FPT CURRENCY", "FPT") Ownable(msg.sender) {}
+    event TokensMinted(address indexed to, uint256 amount);
 
-    function mint(address to, uint256 amount) public onlyOwner {
-        _mint(to, amount);
+    constructor() ERC20("FPT CURRENCY", "FPT") {}
+
+    function mintForUser(address user, uint256 amount) external onlyOwner {
+        require(user != address(0), "Invalid address");
+        _mint(user, amount);
+        emit TokensMinted(user, amount);
     }
 }
