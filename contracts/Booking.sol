@@ -6,10 +6,10 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 // import "../node_modules/@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
-import "./FPTCurrency.sol";
+import "./DXLABCoin.sol";
 
-contract LabBookingSystem is Ownable, ReentrancyGuard {
-    FPTCurrency public fptToken;
+contract Booking is Ownable, ReentrancyGuard {
+    DXLABCoin public dxlToken;
     uint256 public constant SLOT_PRICE = 5 * 10 ** 18; // 5 FPT tokens
     uint256 public constant MAX_SLOTS = 5;
     uint256 public constant PENALTY_AMOUNT = 10 * 10 ** 18; // 10 FPT for reactivation
@@ -25,6 +25,10 @@ contract LabBookingSystem is Ownable, ReentrancyGuard {
 
     struct Booking {
         string roomId;
+        string roomName;
+        string areaId;
+        string areaName;
+        string position;
         uint8 slot;
         address user;
         uint256 price;
@@ -41,11 +45,25 @@ contract LabBookingSystem is Ownable, ReentrancyGuard {
     event BookingCreated(
         bytes32 indexed bookingId,
         string roomId,
+        string roomName,
+        string areaId,
+        string areaName,
+        string position,
         uint8 slot,
-        address user,
+        address indexed user,
         uint256 time
     );
-    event BookingCancelled(bytes32 indexed bookingId, uint256 refundAmount);
+
+    event BookingCancelled(
+        bytes32 indexed bookingId,
+        string roomId,
+        string roomName,
+        string areaId,
+        string areaName,
+        string position,
+        uint256 refundAmount
+    );
+
     event BookingCheckedIn(bytes32 indexed bookingId);
     event UserBlocked(address indexed user);
     event UserUnblocked(address indexed user);
@@ -77,8 +95,8 @@ contract LabBookingSystem is Ownable, ReentrancyGuard {
     //     fptToken = FPTCurrency(_fptToken);
     // }
 
-    constructor(address _fptToken) {
-        fptToken = FPTCurrency(_fptToken);
+    constructor(address _dxlToken) {
+        dxlToken = DXLABCoin(_dxlToken);
     }
 
     function registerUser(
@@ -109,6 +127,10 @@ contract LabBookingSystem is Ownable, ReentrancyGuard {
 
     function book(
         string memory roomId,
+        string memory roomName,
+        string memory areaId,
+        string memory areaName,
+        string memory position,
         uint8 slot,
         uint256 time
     ) external onlyRegistered notBlocked nonReentrant {
@@ -120,28 +142,43 @@ contract LabBookingSystem is Ownable, ReentrancyGuard {
 
         require(!roomSlotBooked[roomSlotId], "Slot already booked");
         require(
-            fptToken.balanceOf(msg.sender) >= SLOT_PRICE,
+            dxlToken.balanceOf(msg.sender) >= SLOT_PRICE,
             "Insufficient FPT balance"
         );
 
         // Transfer tokens from user to contract
         require(
-            fptToken.transferFrom(msg.sender, address(this), SLOT_PRICE),
+            dxlToken.transferFrom(msg.sender, address(this), SLOT_PRICE),
             "Token transfer failed"
         );
 
-        bookings[bookingId] = Booking(
-            roomId,
-            slot,
-            msg.sender,
-            SLOT_PRICE,
-            time,
-            false,
-            false
-        );
+        bookings[bookingId] = Booking({
+            roomId: roomId,
+            roomName: roomName,
+            areaId: areaId,
+            areaName: areaName,
+            position: position,
+            slot: slot,
+            user: msg.sender,
+            price: SLOT_PRICE,
+            time: time,
+            checkedIn: false,
+            cancelled: false
+        });
+
         roomSlotBooked[roomSlotId] = true;
 
-        emit BookingCreated(bookingId, roomId, slot, msg.sender, time);
+        emit BookingCreated(
+            bookingId,
+            roomId,
+            roomName,
+            areaId,
+            areaName,
+            position,
+            slot,
+            msg.sender,
+            time
+        );
     }
 
     function cancelBooking(bytes32 bookingId) external nonReentrant {
@@ -155,12 +192,13 @@ contract LabBookingSystem is Ownable, ReentrancyGuard {
         uint256 timeToBooking = booking.time - block.timestamp;
 
         if (timeToBooking >= 1 hours) {
-            refundAmount = booking.price; // 100% refund
+            refundAmount = booking.price;
         } else if (timeToBooking >= 30 minutes) {
-            refundAmount = booking.price / 2; // 50% refund
+            refundAmount = booking.price / 2;
         }
 
         booking.cancelled = true;
+
         bytes32 roomSlotId = generateRoomSlotId(
             booking.roomId,
             booking.slot,
@@ -170,12 +208,11 @@ contract LabBookingSystem is Ownable, ReentrancyGuard {
 
         if (refundAmount > 0) {
             require(
-                fptToken.transfer(msg.sender, refundAmount),
+                dxlToken.transfer(msg.sender, refundAmount),
                 "Refund failed"
             );
         }
 
-        // Update consecutive cancellations
         User storage user = users[msg.sender];
         user.consecutiveCancellations++;
 
@@ -184,7 +221,15 @@ contract LabBookingSystem is Ownable, ReentrancyGuard {
             emit UserBlocked(msg.sender);
         }
 
-        emit BookingCancelled(bookingId, refundAmount);
+        emit BookingCancelled(
+            bookingId,
+            booking.roomId,
+            booking.roomName,
+            booking.areaId,
+            booking.areaName,
+            booking.position,
+            refundAmount
+        );
     }
 
     function checkIn(bytes32 bookingId) external onlyRegistered {
@@ -198,7 +243,7 @@ contract LabBookingSystem is Ownable, ReentrancyGuard {
         );
 
         booking.checkedIn = true;
-        users[msg.sender].consecutiveCancellations = 0; // Reset consecutive cancellations
+        users[msg.sender].consecutiveCancellations = 0;
 
         emit BookingCheckedIn(bookingId);
     }
@@ -207,12 +252,12 @@ contract LabBookingSystem is Ownable, ReentrancyGuard {
         User storage user = users[msg.sender];
         require(user.blockEndTime > block.timestamp, "Account not blocked");
         require(
-            fptToken.balanceOf(msg.sender) >= PENALTY_AMOUNT,
+            dxlToken.balanceOf(msg.sender) >= PENALTY_AMOUNT,
             "Insufficient penalty amount"
         );
 
         require(
-            fptToken.transferFrom(msg.sender, address(this), PENALTY_AMOUNT),
+            dxlToken.transferFrom(msg.sender, address(this), PENALTY_AMOUNT),
             "Penalty payment failed"
         );
 
@@ -227,7 +272,7 @@ contract LabBookingSystem is Ownable, ReentrancyGuard {
     ) external onlyRegistered nonReentrant {
         require(amount > 0, "Amount must be greater than 0");
         require(
-            fptToken.transferFrom(msg.sender, address(this), amount),
+            dxlToken.transferFrom(msg.sender, address(this), amount),
             "Transfer failed"
         );
         emit TokensDeposited(msg.sender, amount);
@@ -237,7 +282,7 @@ contract LabBookingSystem is Ownable, ReentrancyGuard {
         uint256 amount
     ) external onlyRegistered nonReentrant {
         require(amount > 0, "Amount must be greater than 0");
-        require(fptToken.transfer(msg.sender, amount), "Transfer failed");
+        require(dxlToken.transfer(msg.sender, amount), "Transfer failed");
         emit TokensWithdrawn(msg.sender, amount);
     }
 }

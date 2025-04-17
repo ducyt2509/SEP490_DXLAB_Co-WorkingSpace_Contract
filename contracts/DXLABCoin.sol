@@ -4,10 +4,10 @@ pragma solidity ^0.8.19;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract FPTCurrency is ERC20, Ownable {
+contract DXLABCoin is ERC20, Ownable {
     event TokensMinted(address indexed to, uint256 amount);
 
-    constructor() ERC20("FPT CURRENCY", "FPT") {}
+    constructor() ERC20("DXLAB Coin", "DXL") {}
 
     function mintForUser(address user, uint256 amount) external onlyOwner {
         require(user != address(0), "Invalid address");

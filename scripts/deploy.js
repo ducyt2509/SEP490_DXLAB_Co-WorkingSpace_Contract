@@ -29,42 +29,42 @@ async function main() {
   console.log('🚀 Deploying contracts with account:', deployer.address);
 
   try {
-    const FPTCurrency = await hre.ethers.getContractFactory('FPTCurrency');
-    const fptToken = await FPTCurrency.deploy();
-    const fptTx = await fptToken.deploymentTransaction();
-    await fptToken.waitForDeployment();
-    const fptTokenAddress = await fptToken.getAddress();
-    console.log(`✅ FPTCurrency deployed to: ${fptTokenAddress}`);
-    console.log(`🔗 Transaction: ${explorerUrl}/tx/${fptTx.hash}`);
+    const DXLABCoin = await hre.ethers.getContractFactory('DXLABCoin');
+    const dxlToken = await DXLABCoin.deploy();
+    const dxlTx = await dxlToken.deploymentTransaction();
+    await dxlToken.waitForDeployment();
+    const dxlTokenAddress = await dxlToken.getAddress();
+    console.log(`✅ DXLABCoin deployed to: ${dxlTokenAddress}`);
+    console.log(`🔗 Transaction: ${explorerUrl}/tx/${dxlTx.hash}`);
 
-    const LabBookingSystem = await hre.ethers.getContractFactory(
-      'LabBookingSystem',
+    const Booking = await hre.ethers.getContractFactory(
+      'Booking',
     );
-    const labBookingSystem = await LabBookingSystem.deploy(fptTokenAddress);
-    const labBookingTx = await labBookingSystem.deploymentTransaction();
-    await labBookingSystem.waitForDeployment();
-    const labBookingSystemAddress = await labBookingSystem.getAddress();
-    console.log(`✅ LabBookingSystem deployed to: ${labBookingSystemAddress}`);
-    console.log(`🔗 Transaction: ${explorerUrl}/tx/${labBookingTx.hash}`);
+    const booking = await Booking.deploy(dxlTokenAddress);
+    const bookingTx = await booking.deploymentTransaction();
+    await booking.waitForDeployment();
+    const bookingAddress = await booking.getAddress();
+    console.log(`✅ Booking deployed to: ${bookingAddress}`);
+    console.log(`🔗 Transaction: ${explorerUrl}/tx/${bookingTx.hash}`);
 
     saveDeploymentDetails({
       network: networkName,
       contracts: {
-        FPTCurrency: {
-          address: fptTokenAddress,
-          explorer: `${explorerUrl}/address/${fptTokenAddress}`,
-          transaction: `${explorerUrl}/tx/${fptTx.hash}`,
+        DXLABCoin: {
+          address: dxlTokenAddress,
+          explorer: `${explorerUrl}/address/${dxlTokenAddress}`,
+          transaction: `${explorerUrl}/tx/${dxlTx.hash}`,
         },
-        LabBookingSystem: {
-          address: labBookingSystemAddress,
-          explorer: `${explorerUrl}/address/${labBookingSystemAddress}`,
-          transaction: `${explorerUrl}/tx/${labBookingTx.hash}`,
+        Booking: {
+          address: bookingAddress,
+          explorer: `${explorerUrl}/address/${bookingAddress}`,
+          transaction: `${explorerUrl}/tx/${bookingTx.hash}`,
         },
       },
     });
 
-    saveContractArtifacts('FPTCurrency');
-    saveContractArtifacts('LabBookingSystem');
+    saveContractArtifacts('DXLABCoin');
+    saveContractArtifacts('Booking');
   } catch (error) {
     console.error('[ERROR]:', error);
   }
