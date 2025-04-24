@@ -27,6 +27,7 @@ contract LabBookingSystem is Ownable, ReentrancyGuard {
         uint256 price;
         uint256 time;
         bool checkedIn;
+        bool checkedOut;
         bool cancelled;
     }
 
@@ -44,6 +45,7 @@ contract LabBookingSystem is Ownable, ReentrancyGuard {
     );
     event BookingCancelled(bytes32 indexed bookingId, uint256 refundAmount);
     event BookingCheckedIn(bytes32 indexed bookingId);
+    event BookingCheckedOut(bytes32 indexed bookingId);
     event UserBlocked(address indexed user);
     event UserUnblocked(address indexed user);
     event TokensDeposited(address indexed user, uint256 amount);
@@ -130,6 +132,7 @@ contract LabBookingSystem is Ownable, ReentrancyGuard {
             SLOT_PRICE,
             time,
             false,
+            false,
             false
         );
         roomSlotBooked[roomSlotId] = true;
@@ -194,6 +197,25 @@ contract LabBookingSystem is Ownable, ReentrancyGuard {
         users[msg.sender].consecutiveCancellations = 0; // Reset consecutive cancellations
 
         emit BookingCheckedIn(bookingId);
+    }
+
+    function checkOut(bytes32 bookingId) external onlyRegistered nonReentrant {
+        Booking storage booking = bookings[bookingId];
+        require(booking.user == msg.sender, "Not the booking owner");
+        require(booking.checkedIn, "User has not checked in");
+        require(!booking.cancelled, "Booking was cancelled");
+        require(!booking.checkedOut, "Already checked out");
+
+        booking.checkedOut = true;
+
+        bytes32 roomSlotId = generateRoomSlotId(
+            booking.roomId,
+            booking.slot,
+            booking.time
+        );
+        roomSlotBooked[roomSlotId] = false;
+
+        emit BookingCheckedOut(bookingId);
     }
 
     function reactivateAccount() external nonReentrant {
