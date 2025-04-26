@@ -226,6 +226,7 @@ contract LabBookingSystem is Ownable, ReentrancyGuard {
             "Insufficient penalty amount"
         );
 
+
         require(
             fptToken.transferFrom(msg.sender, address(this), PENALTY_AMOUNT),
             "Penalty payment failed"
